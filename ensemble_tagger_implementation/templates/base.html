@@ -1,0 +1,37 @@
+<!doctype html>
+<title>srcML Annotator</title>
+<body>
+	<form action="/">
+		<input type="submit" value="Home" />
+	</form>
+<h1>Choose File</h1>
+<p>
+	{% block page_description %}
+	{% endblock %}
+</p>
+<form method=post enctype=multipart/form-data>
+	<input type=file name=file id="file_select" accept="{{file_types_html}}">
+	<input type=submit value=Upload onclick="checkFileType();">
+</form>
+<script>
+	function checkFileType(){
+		//This JS code is intentional
+		{% autoescape false %}
+		const validFileTypes = {{file_types_js}};
+		{% endautoescape %}
+		const fileName = document.querySelector('#file_select').value;
+
+		var result = false;
+		for(let fileType of validFileTypes){
+			if (fileName.endsWith(fileType)){
+				result = true;
+				break;
+			}
+		}
+
+		if(!result){
+			alert("ERROR: Invalid file format used");
+		}
+	}
+</script>
+</body>

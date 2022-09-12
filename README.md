@@ -1,5 +1,5 @@
-# SCANL Ensemble tagger 
-This the official release of the SCANL ensemble part-of-speech tagger.
+# SCANL Ensemble Tagger Frontend
+This is a fork of the [Ensemble Tagger Repository](https://github.com/SCANL/ensemble_tagger) that adds a frontend to the flask application.
 
 ## Cloning the repo
 Please clone recursive since we are currently using submodules. This may change in the future.
@@ -7,7 +7,9 @@ Please clone recursive since we are currently using submodules. This may change 
 	git clone --recursive https://github.com/SCANL/ensemble_tagger.git
 
 ## Setup and Run
-You will need **python3** installed. We will explicitly use the **python3** command below but, of course, if your environment is configured to use python3 by default, you do not need to. We have also only tested this on **Ubuntu 18**. It most likely works on all recent versions of Ubuntu, but we cannot guarantee it will work in other environments.
+You will need **python3** and installed. We will explicitly use the **python3** command below but, of course, if your environment is configured to use python3 by default, you do not need to. We have also only tested this on **Ubuntu 18**. It most likely works on all recent versions of Ubuntu, but we cannot guarantee it will work in other environments.
+
+**srcML** will be needed for the frontend to work.
 
 **If you are on Windows, the tagger has been confirmed to work on Ubuntu via [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)**
 
