@@ -13,6 +13,9 @@
 #include <ParamTypePolicy.hpp>
 #include <srcSAXEventDispatcher.hpp>
 #include <FunctionSignaturePolicy.hpp>
+
+#include <unistd.h>
+
 void hexchar(unsigned char c, unsigned char &hex1, unsigned char &hex2){
     hex1 = c / 16;
     hex2 = c % 16;
@@ -56,8 +59,18 @@ class WordsFromArchivePolicy : public srcSAXEventDispatch::EventListener, public
                 std::cerr<<requestStr<<std::endl;
                 http::Request request(requestStr);
 
+                //print identifier test
+                std::cerr<<identifierType<<"/"<<identifierName<<"/"<<codeContext<<std::endl;
+
                 // send a get request
                 const http::Response response = request.send("GET");
+                //print result test
+                std::cerr<<std::string(response.body.begin(), response.body.end())<<std::endl;
+
+                char tmp[256];
+                getcwd(tmp, 256);
+                std::cerr<<"Current directory: "<<tmp<<std::endl;
+
                 return std::string(response.body.begin(), response.body.end());
             }
             catch (const std::exception& e)
