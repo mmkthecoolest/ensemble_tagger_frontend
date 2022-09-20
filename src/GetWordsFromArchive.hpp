@@ -15,6 +15,7 @@
 #include <FunctionSignaturePolicy.hpp>
 
 #include <unistd.h>
+#include <fstream>
 
 void hexchar(unsigned char c, unsigned char &hex1, unsigned char &hex2){
     hex1 = c / 16;
@@ -70,6 +71,11 @@ class WordsFromArchivePolicy : public srcSAXEventDispatch::EventListener, public
                 char tmp[256];
                 getcwd(tmp, 256);
                 std::cerr<<"Current directory: "<<tmp<<std::endl;
+
+                std::ofstream outputFile;
+                outputFile.open("output.txt");
+                outputFile << std::string(response.body.begin(), response.body.end());
+                outputFile.close();
 
                 return std::string(response.body.begin(), response.body.end());
             }
