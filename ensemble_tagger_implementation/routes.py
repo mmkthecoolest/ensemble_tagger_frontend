@@ -1,8 +1,9 @@
+from sys import stdout
 from ensemble_functions import Annotate_word, Run_external_taggers
 from process_features import Calculate_normalized_length, Add_code_context
 import logging, os, subprocess, shutil
 root_logger = logging.getLogger(__name__)
-from flask import Flask, flash, redirect, url_for, request, render_template, send_from_directory, session
+from flask import Flask, flash, redirect, url_for, request, render_template, send_from_directory, session, render_template_string
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'uploads'
@@ -53,8 +54,8 @@ def allowed_compressed_folder(filename: str):
 def landing():
     return render_template("index.html")
 
-@app.route("/upload_file", methods=['GET', 'POST'])
-def upload_file():
+@app.route("/upload_file_srcml", methods=['GET', 'POST'])
+def upload_file_srcml():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -92,9 +93,55 @@ def upload_file():
 
     return render_template('upload_file.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FILE_EXTENSIONS)), file_types_html=allowed_file_formats_html(list(ALLOWED_FILE_EXTENSIONS)), file_types_js=allowed_file_formats_js(list(ALLOWED_FILE_EXTENSIONS)))
 
+@app.route("/upload_file_annotate", methods=['GET', 'POST'])
+def upload_file_annotate():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            # code branch when selecting a file
+            filename = secure_filename(file.filename)
+            # print(filename)
 
-@app.route("/upload_folder", methods=['GET', 'POST'])
-def upload_folder():
+            if not os.path.isdir(app.config['UPLOAD_FOLDER']):
+                os.mkdir(app.config['UPLOAD_FOLDER'])
+
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            if not os.path.isdir(app.config['RESULTS_FOLDER']):
+                os.mkdir(app.config['RESULTS_FOLDER'])
+
+            result_file = os.path.join(
+                app.config['RESULTS_FOLDER'], filename) + ".xml"
+            subprocess.run(
+                ["srcml", os.path.join(app.config['UPLOAD_FOLDER'], filename), "-o", result_file])
+            #file.close()
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            global output
+            output = subprocess.run(["./../build/bin/grabidentifiers", result_file], text=True, capture_output=True).stdout
+
+            os.remove(result_file)
+            return redirect(url_for('tagger_output'))
+            
+
+    return render_template('upload_file_annotate.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FILE_EXTENSIONS)), file_types_html=allowed_file_formats_html(list(ALLOWED_FILE_EXTENSIONS)), file_types_js=allowed_file_formats_js(list(ALLOWED_FILE_EXTENSIONS)))
+
+@app.route("/tagger_output")
+def tagger_output():
+    return output
+
+
+@app.route("/upload_folder_srcml", methods=['GET', 'POST'])
+def upload_folder_srcml():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
