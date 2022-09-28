@@ -202,6 +202,12 @@ def upload_folder_srcml():
 
     return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
 
+@app.route('/reactjs-test')
+def reactjs_test():
+    return {'Name': 'Mustafa',
+            'Number': '71'
+            }
+
 @app.route('/<identifier_type>/<identifier_name>/<identifier_context>')
 def listen(identifier_type, identifier_name, identifier_context):
     root_logger.info("INPUT: {ident_type} {ident_name} {ident_context}".format(ident_type=identifier_type, ident_name=identifier_name, ident_context=identifier_context))
