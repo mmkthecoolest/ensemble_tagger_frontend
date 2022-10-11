@@ -7,9 +7,9 @@ Please clone recursive since we are currently using submodules. This may change 
 	git clone --recursive https://github.com/SCANL/ensemble_tagger.git
 
 ## Setup and Run
-You will need **python3** and installed. We will explicitly use the **python3** command below but, of course, if your environment is configured to use python3 by default, you do not need to. We have also only tested this on **Ubuntu 18**. It most likely works on all recent versions of Ubuntu, but we cannot guarantee it will work in other environments.
+You will need **python3** installed. We will explicitly use the **python3** command below but, of course, if your environment is configured to use python3 by default, you do not need to. We have also only tested this on **Ubuntu 18**. It most likely works on all recent versions of Ubuntu, but we cannot guarantee it will work in other environments.
 
-**srcML** will be needed for the frontend to work.
+**srcML** and Node.JS will also be needed for the frontend to work.
 
 **If you are on Windows, the tagger has been confirmed to work on Ubuntu via [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)**
 
@@ -103,6 +103,11 @@ You can use HTTP to interact with the server and get part-of-speech annotations.
 This will run the program that automatically queries the route above using all identifiers in the srcml file. **Make sure the server is running before you run the C++ script**. Otherwise, it won't be able to communicate with the server.
 
 If you are unfamiliar with srcML, [check it out](https://www.srcml.org/). Since the actual tagger is a web server, you don't have to use srcML. You could always use other AST-based code representations, or any other method of obtaining identifier information. If you decide not to use srcML, you should ignore the C++ script.
+
+## Running the Frontend
+1. Make sure the required node dependencies are installed: `npm ci`
+2. If you haven't already, run `routes.py` from above
+3. Start the React frontend: `npm start` 
 
 ## Errors?
 Please make an issue if you run into errors

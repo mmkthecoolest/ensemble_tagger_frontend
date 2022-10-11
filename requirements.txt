@@ -7,3 +7,4 @@ imbalanced-learn==0.7.0
 Flask>=2.2.0
 pexpect
 pyyaml
+Flask-Cors>=3.0.10

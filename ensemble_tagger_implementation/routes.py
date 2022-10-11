@@ -4,6 +4,7 @@ from process_features import Calculate_normalized_length, Add_code_context
 import logging, os, subprocess, shutil
 root_logger = logging.getLogger(__name__)
 from flask import Flask, flash, redirect, url_for, request, render_template, send_from_directory, session, render_template_string
+from flask_cors import cross_origin
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'uploads'
@@ -17,6 +18,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESULTS_FOLDER'] = RESULTS_FOLDER
 app.config['EXTRACT_FOLDER'] = EXTRACT_FOLDER
 app.secret_key = "abc"
+
+#cors = CORS(app)
+#app.config['CORS_HEADERS'] = 'Access-Control-Allow-Origin'
 
 compressed_folder_extension = ""
 
@@ -55,12 +59,15 @@ def landing():
     return render_template("index.html")
 
 @app.route("/upload_file_srcml", methods=['GET', 'POST'])
+@cross_origin()
 def upload_file_srcml():
     if request.method == 'POST':
+        print("Executing POST")
         # check if the post request has the file part
         if 'file' not in request.files:
+            print("File missing")
             flash('No file part')
-            return redirect(request.url)
+            return "ERROR"
         file = request.files['file']
         # If the user does not select a file, the browser submits an
         # empty file without a filename.
@@ -68,6 +75,7 @@ def upload_file_srcml():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
+            print("File accepted")
             # code branch when selecting a file
             filename = secure_filename(file.filename)
             # print(filename)
@@ -88,8 +96,10 @@ def upload_file_srcml():
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             response = send_from_directory(app.config['RESULTS_FOLDER'], filename + ".xml", as_attachment=True)
+            print(response)
             os.remove(os.path.join(app.config['RESULTS_FOLDER'], filename + ".xml"))
             return response
+            #return 'SUCCESS'
 
     return render_template('upload_file.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FILE_EXTENSIONS)), file_types_html=allowed_file_formats_html(list(ALLOWED_FILE_EXTENSIONS)), file_types_js=allowed_file_formats_js(list(ALLOWED_FILE_EXTENSIONS)))
 
@@ -141,6 +151,7 @@ def tagger_output():
 
 
 @app.route("/upload_folder_srcml", methods=['GET', 'POST'])
+@cross_origin()
 def upload_folder_srcml():
     if request.method == 'POST':
         # check if the post request has the file part
