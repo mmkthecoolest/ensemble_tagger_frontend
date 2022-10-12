@@ -4,7 +4,7 @@ This is a fork of the [Ensemble Tagger Repository](https://github.com/SCANL/ense
 ## Cloning the repo
 Please clone recursive since we are currently using submodules. This may change in the future.
 
-	git clone --recursive https://github.com/SCANL/ensemble_tagger.git
+	git clone --recursive https://github.com/mmkthecoolest/ensemble_tagger_frontend.git
 
 ## Setup and Run
 You will need **python3** installed. We will explicitly use the **python3** command below but, of course, if your environment is configured to use python3 by default, you do not need to. We have also only tested this on **Ubuntu 18**. It most likely works on all recent versions of Ubuntu, but we cannot guarantee it will work in other environments.
@@ -27,6 +27,7 @@ The tagger is split into two parts:
 Before compiling the C++ script, you need to install:
 - Cmake (tested on 3.5) - ``sudo apt install cmake``
 - libxml2-dev - ``sudo apt install libxml2-dev``
+- build-essential - ``sudo apt install build-essential``
 
 To compile the C++ script, do the following in the root (i.e., ensemble_tagger) directory:
 - ``mkdir build``
