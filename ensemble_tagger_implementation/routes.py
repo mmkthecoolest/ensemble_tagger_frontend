@@ -104,6 +104,7 @@ def upload_file_srcml():
     return render_template('upload_file.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FILE_EXTENSIONS)), file_types_html=allowed_file_formats_html(list(ALLOWED_FILE_EXTENSIONS)), file_types_js=allowed_file_formats_js(list(ALLOWED_FILE_EXTENSIONS)))
 
 @app.route("/upload_file_annotate", methods=['GET', 'POST'])
+@cross_origin()
 def upload_file_annotate():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -140,7 +141,7 @@ def upload_file_annotate():
             output = subprocess.run(["./../build/bin/grabidentifiers", result_file], text=True, capture_output=True).stdout
 
             os.remove(result_file)
-            return redirect(url_for('tagger_output'))
+            return output
             
 
     return render_template('upload_file_annotate.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FILE_EXTENSIONS)), file_types_html=allowed_file_formats_html(list(ALLOWED_FILE_EXTENSIONS)), file_types_js=allowed_file_formats_js(list(ALLOWED_FILE_EXTENSIONS)))
