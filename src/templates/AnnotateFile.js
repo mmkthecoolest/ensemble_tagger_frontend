@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import beautify from "xml-beautifier";
+import './XMLRender.css'
 //import download from 'downloadjs';
 
 const AnnotateFile = (props) => {
@@ -79,7 +81,16 @@ const AnnotateFile = (props) => {
 		<button onClick={handleSubmission}>Submit</button>
 	</div>)
 	} else {
-		return result;
+		const xml = beautify(result);
+		console.log("Beautify result: " + result);
+		
+		let trimmedString = xml.substring(xml.indexOf(">")).replace(/>/, "");
+		console.log("trimmedString: " + trimmedString);
+		
+		let finalString = trimmedString.substring(trimmedString.indexOf("<"));
+		console.log("finalString: " + finalString);
+		
+		return (<div className="xml">{finalString}</div>);
 	}
 }
 
