@@ -1,39 +1,24 @@
-import logo from './logo.svg';
-import React, { useState, useEffect } from "react";
-import './App.css';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from './templates/Home';
+import UploadFileSrcML from './templates/UploadFileSrcML';
+import UploadFolderSrcML from './templates/UploadFolderSrcML';
+import AnnotateFile from "./templates/AnnotateFile";
+//import './App.css';
 
 function App() {
   // usestate for setting a javascript
   // object for storing and using data
-  const [data, setdata] = useState({
-    name: "",
-    number: 0,
-  });
-
-  // Using useEffect for single rendering
-  useEffect(() => {
-    // Using fetch to fetch the api from 
-    // flask server it will be redirected to proxy
-    fetch("/reactjs-test").then((res) =>
-      res.json().then((data) => {
-        // Setting a data from api
-        setdata({
-          name: data.Name,
-          number: data.Number,
-        });
-      })
-    );
-  }, []);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>React and flask</h1>
-        <p>{data.name}</p>
-        <p>{data.number}</p>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/upload_file_srcml" element={<UploadFileSrcML />} />
+        <Route path="/upload_folder_srcml" element={<UploadFolderSrcML />}/>
+        <Route path="/upload_file_annotate" element={<AnnotateFile title="Ensemble Tagger" description="Instructions: please use the following file formats for upload: " subsection="upload_file_annotate" file_formats={["java", "cpp", "c", "h"]}/>}/>
 
-      </header>
-    </div>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
