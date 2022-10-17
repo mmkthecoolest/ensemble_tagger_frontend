@@ -1,6 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import beautify from "xml-beautifier";
+import download from 'downloadjs';
 import './XMLRender.css'
+
+import {
+	Accordion,
+	AccordionBody,
+	AccordionHeader,
+	AccordionItem,
+	Button
+  } from 'reactstrap';
 //import download from 'downloadjs';
 
 const AnnotateFile = (props) => {
@@ -9,6 +18,17 @@ const AnnotateFile = (props) => {
 
 	const [selectedFile, setSelectedFile] = useState();
 	const [[result, fileIsAnnotated], setResult] = useState(["", false]);
+	const [open, setOpen] = useState('1');
+	
+	const downloadIsCalled = useRef(false);
+
+	//this gets called every render
+	const useEffectCalls = useRef(0);
+	useEffect(() => {
+		console.log("Use Effect called: " + useEffectCalls.current);
+		useEffectCalls.current += 1;
+		document.title = title;
+	});
 
 	//function used to assign file to UI
 	const changeHandler = (event) => {
@@ -57,10 +77,6 @@ const AnnotateFile = (props) => {
 
 	};
 
-	useEffect(() => {
-		document.title = title;
-	});
-
 	const fileExtensionsString = (fileExtensionsList) => {
 		return fileExtensionsList.slice(0, fileExtensionsList.length - 1).join(", ") + " or " + fileExtensionsList.at(-1);
 	}
@@ -68,6 +84,15 @@ const AnnotateFile = (props) => {
 	const fileExtensionsHTML = (fileExtensionsList) => {
 		return fileExtensionsList.map((extension) => "." + extension).join(",");
 	}
+
+	const toggle = (id) => {
+		if (open === id) {
+		  setOpen();
+		} else {
+		  setOpen(id);
+		}
+	};
+	
 
 	if(!fileIsAnnotated){
 	return (<div>
@@ -89,8 +114,30 @@ const AnnotateFile = (props) => {
 		
 		let finalString = trimmedString.substring(trimmedString.indexOf("<"));
 		console.log("finalString: " + finalString);
+
+		if(!downloadIsCalled.current){
+			//console.log("Download called");
+			//download(finalString, (selectedFile['name'] + ".xml"));
+
+			//downloadIsCalled.current = !downloadIsCalled.current;
+		}
+
+		const downloadFile = () => {
+			download(finalString, (selectedFile['name'] + ".xml"));
+		}
+
+		return (<div>
+			<Accordion open={open} toggle={toggle}>
+				<AccordionItem>
+					<AccordionHeader targetId="1">{selectedFile['name']}</AccordionHeader><Button onClick={downloadFile}>Download</Button>
+					<AccordionBody className="xml" accordionId="1">
+						{finalString}
+					</AccordionBody>
+				</AccordionItem>
+			</Accordion>
+		</div>);
 		
-		return (<div className="xml">{finalString}</div>);
+		//return (<div className="xml">{finalString}</div>);
 	}
 }
 

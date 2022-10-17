@@ -4,6 +4,7 @@ import Home from './templates/Home';
 import UploadFileSrcML from './templates/UploadFileSrcML';
 import UploadFolderSrcML from './templates/UploadFolderSrcML';
 import AnnotateFile from "./templates/AnnotateFile";
+import 'bootstrap/dist/css/bootstrap.min.css';
 //import './App.css';
 
 function App() {
