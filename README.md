@@ -7,7 +7,7 @@ Please clone recursive since we are currently using submodules. This may change 
 	git clone --recursive https://github.com/mmkthecoolest/ensemble_tagger_frontend.git
 
 ## Setup and Run
-You will need **python3** installed. We will explicitly use the **python3** command below but, of course, if your environment is configured to use python3 by default, you do not need to. We have also only tested this on **Ubuntu 18**. It most likely works on all recent versions of Ubuntu, but we cannot guarantee it will work in other environments.
+You will need **python3** installed. We will explicitly use the **python3** command below but, of course, if your environment is configured to use python3 by default, you do not need to. This fork has only been tested on **Ubuntu 20.04**. It most likely works on all recent versions of Ubuntu, but we cannot guarantee it will work in other environments.
 
 **srcML** and Node.JS will also be needed for the frontend to work.
 

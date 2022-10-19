@@ -6,6 +6,8 @@ root_logger = logging.getLogger(__name__)
 from flask import Flask, flash, redirect, url_for, request, render_template, send_from_directory, session, render_template_string
 from flask_cors import cross_origin
 from werkzeug.utils import secure_filename
+from time import sleep
+from uuid import uuid4
 
 UPLOAD_FOLDER = 'uploads'
 RESULTS_FOLDER = 'results'
@@ -22,7 +24,7 @@ app.secret_key = "abc"
 #cors = CORS(app)
 #app.config['CORS_HEADERS'] = 'Access-Control-Allow-Origin'
 
-compressed_folder_extension = ""
+#compressed_folder_extension = ""
 
 def allowed_file(filename: str):
     return '.' in filename and \
@@ -43,16 +45,17 @@ def allowed_file_formats_js(format_list):
 
 def allowed_compressed_folder(filename: str):
     result = False
+    compressed_folder_extension = ""
 
     if '.' in filename:
         for extension in ALLOWED_FOLDER_EXTENSIONS.keys():
             if filename.endswith('.' + extension):
-                global compressed_folder_extension
+                #global compressed_folder_extension
                 compressed_folder_extension = extension
                 result = True
                 break
 
-    return result
+    return (result, compressed_folder_extension)
 
 @app.route("/")
 def landing():
@@ -80,20 +83,25 @@ def upload_file_srcml():
             filename = secure_filename(file.filename)
             # print(filename)
 
-            if not os.path.isdir(app.config['UPLOAD_FOLDER']):
-                os.mkdir(app.config['UPLOAD_FOLDER'])
+            unique_folder_identifier = str(uuid4())
+            unique_upload_folder = app.config['UPLOAD_FOLDER'] + "-" + unique_folder_identifier
+            unique_results_folder = app.config['RESULTS_FOLDER'] + "-" + unique_folder_identifier
 
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            if not os.path.isdir(unique_upload_folder):
+                os.mkdir(unique_upload_folder)
 
-            if not os.path.isdir(app.config['RESULTS_FOLDER']):
-                os.mkdir(app.config['RESULTS_FOLDER'])
+            file.save(os.path.join(unique_upload_folder, filename))
+
+            if not os.path.isdir(unique_results_folder):
+                os.mkdir(unique_results_folder)
 
             result_file = os.path.join(
-                app.config['RESULTS_FOLDER'], filename) + ".xml"
+                unique_results_folder, filename) + ".xml"
             subprocess.run(
-                ["srcml", os.path.join(app.config['UPLOAD_FOLDER'], filename), "-o", result_file])
+                ["srcml", os.path.join(unique_upload_folder, filename), "-o", result_file])
             #file.close()
-            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            os.remove(os.path.join(unique_upload_folder, filename))
+            os.rmdir(unique_upload_folder)
 
             #response = send_from_directory(app.config['RESULTS_FOLDER'], filename + ".xml", as_attachment=True)
             #print(response)
@@ -101,10 +109,11 @@ def upload_file_srcml():
             #return response
             #return 'SUCCESS'
 
-            output_file = open(os.path.join(app.config['RESULTS_FOLDER'], filename + ".xml"), 'r')
+            output_file = open(os.path.join(unique_results_folder, filename + ".xml"), 'r')
             output = output_file.read()
             output_file.close()
-            os.remove(os.path.join(app.config['RESULTS_FOLDER'], filename + ".xml"))
+            os.remove(os.path.join(unique_results_folder, filename + ".xml"))
+            os.rmdir(unique_results_folder)
             return output
             
 
@@ -127,35 +136,41 @@ def upload_file_annotate():
         if file and allowed_file(file.filename):
             # code branch when selecting a file
             filename = secure_filename(file.filename)
+
+            unique_folder_identifier = str(uuid4())
+            unique_upload_folder = app.config['UPLOAD_FOLDER'] + "-" + unique_folder_identifier
+            unique_results_folder = app.config['RESULTS_FOLDER'] + "-" + unique_folder_identifier
+
             # print(filename)
 
-            if not os.path.isdir(app.config['UPLOAD_FOLDER']):
-                os.mkdir(app.config['UPLOAD_FOLDER'])
+            if not os.path.isdir(unique_upload_folder):
+                os.mkdir(unique_upload_folder)
 
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(unique_upload_folder, filename))
 
-            if not os.path.isdir(app.config['RESULTS_FOLDER']):
-                os.mkdir(app.config['RESULTS_FOLDER'])
+            if not os.path.isdir(unique_results_folder):
+                os.mkdir(unique_results_folder)
 
             result_file = os.path.join(
-                app.config['RESULTS_FOLDER'], filename) + ".xml"
+                unique_results_folder, filename) + ".xml"
             subprocess.run(
-                ["srcml", os.path.join(app.config['UPLOAD_FOLDER'], filename), "-o", result_file])
+                ["srcml", os.path.join(unique_upload_folder, filename), "-o", result_file])
             #file.close()
-            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            os.remove(os.path.join(unique_upload_folder, filename))
+            os.rmdir(unique_upload_folder)
 
-            global output
             output = subprocess.run(["./../build/bin/grabidentifiers", result_file], text=True, capture_output=True).stdout
 
             os.remove(result_file)
+            os.rmdir(unique_results_folder)
             return output
             
 
     return render_template('upload_file_annotate.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FILE_EXTENSIONS)), file_types_html=allowed_file_formats_html(list(ALLOWED_FILE_EXTENSIONS)), file_types_js=allowed_file_formats_js(list(ALLOWED_FILE_EXTENSIONS)))
 
-@app.route("/tagger_output")
-def tagger_output():
-    return output
+#@app.route("/tagger_output")
+#def tagger_output():
+#    return output
 
 
 @app.route("/upload_folder_srcml", methods=['GET', 'POST'])
@@ -172,26 +187,33 @@ def upload_folder_srcml():
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
-        if file and allowed_compressed_folder(file.filename):
+        allowed_compressed_folder_result = allowed_compressed_folder(file.filename)
+        if file and allowed_compressed_folder_result[0]:
+            compressed_folder_extension = allowed_compressed_folder_result[1]
             # step 1: extract contents of compressed folder into the upload folder using shutil
             filename = secure_filename(file.filename)
             # print(filename)
+            unique_folder_identifier = str(uuid4())
+            unique_upload_folder = app.config['UPLOAD_FOLDER'] + "-" + unique_folder_identifier
+            unique_results_folder = app.config['RESULTS_FOLDER'] + "-" + unique_folder_identifier
+            unique_extract_folder = app.config['EXTRACT_FOLDER'] + "-" + unique_folder_identifier
 
-            if not os.path.isdir(app.config['UPLOAD_FOLDER']):
-                os.mkdir(app.config['UPLOAD_FOLDER'])
+            if not os.path.isdir(unique_upload_folder):
+                os.mkdir(unique_upload_folder)
 
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(unique_upload_folder, filename))
 
-            if not os.path.isdir(app.config['EXTRACT_FOLDER']):
-                os.mkdir(app.config['EXTRACT_FOLDER'])
+            if not os.path.isdir(unique_extract_folder):
+                os.mkdir(unique_extract_folder)
 
             shutil.unpack_archive(os.path.join(
-                app.config['UPLOAD_FOLDER'], filename), app.config['EXTRACT_FOLDER'])
+                unique_upload_folder, filename), unique_extract_folder)
 
-            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            os.remove(os.path.join(unique_upload_folder, filename))
+            os.rmdir(unique_upload_folder)
 
             # step 2: scan for a directory name (must be 1 directory)
-            directory_list = list(os.scandir(app.config['EXTRACT_FOLDER']))
+            directory_list = list(os.scandir(unique_extract_folder))
             if len(directory_list) > 0:
                 RESULT_FILE_NAME = "result"
 
@@ -200,18 +222,19 @@ def upload_folder_srcml():
                 print("Path: " + directory_list[0].path)
                 # step 3: use srcml with dir parameter and output to result folder
                 subprocess.run(
-                ["srcml", "--to-dir", app.config['RESULTS_FOLDER'], app.config['EXTRACT_FOLDER']])
+                ["srcml", "--to-dir", unique_results_folder, unique_extract_folder])
 
                 # step 4: delete folder contents in the extract folder
-                shutil.rmtree(app.config['EXTRACT_FOLDER'])
+                shutil.rmtree(unique_extract_folder)
 
                 # step 5: make a new zipped archive of the contents
-                shutil.make_archive(os.path.join(app.config['RESULTS_FOLDER'],RESULT_FILE_NAME),ALLOWED_FOLDER_EXTENSIONS[compressed_folder_extension],app.config['RESULTS_FOLDER'],app.config['EXTRACT_FOLDER'])
+                shutil.make_archive(os.path.join(unique_results_folder,RESULT_FILE_NAME),ALLOWED_FOLDER_EXTENSIONS[compressed_folder_extension],unique_results_folder,unique_extract_folder)
 
                 # step 6: Send compressed folder and delete remaining contents
-                response = send_from_directory(app.config['RESULTS_FOLDER'], RESULT_FILE_NAME + "." + compressed_folder_extension, as_attachment=True)
-                os.remove(os.path.join(app.config['RESULTS_FOLDER'], RESULT_FILE_NAME + "." + compressed_folder_extension))
-                shutil.rmtree(os.path.join(app.config['RESULTS_FOLDER'], app.config['EXTRACT_FOLDER']))
+                response = send_from_directory(unique_results_folder, RESULT_FILE_NAME + "." + compressed_folder_extension, as_attachment=True)
+                os.remove(os.path.join(unique_results_folder, RESULT_FILE_NAME + "." + compressed_folder_extension))
+                shutil.rmtree(os.path.join(unique_results_folder, unique_extract_folder))
+                os.rmdir(unique_results_folder)
                 return response
             else:
                 flash("ERROR: Compressed folder is empty")
@@ -220,12 +243,6 @@ def upload_folder_srcml():
             
 
     return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
-
-@app.route('/reactjs-test')
-def reactjs_test():
-    return {'Name': 'Mustafa',
-            'Number': '71'
-            }
 
 @app.route('/<identifier_type>/<identifier_name>/<identifier_context>')
 def listen(identifier_type, identifier_name, identifier_context):
