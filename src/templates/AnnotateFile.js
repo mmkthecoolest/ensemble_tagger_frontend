@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import beautify from "xml-beautifier";
+import beautify from 'xml-beautifier';
 import download from 'downloadjs';
 import './XMLRender.css'
 
@@ -9,18 +9,18 @@ import {
 	AccordionHeader,
 	AccordionItem,
 	Button
-  } from 'reactstrap';
+} from 'reactstrap';
 //import download from 'downloadjs';
 
 const AnnotateFile = (props) => {
 	const title = props.title;
-	const subsection = props.subsection;
+	//const subsection = props.subsection;
 
 	const [selectedFile, setSelectedFile] = useState();
 	const [[result, fileIsAnnotated], setResult] = useState(["", false]);
 	const [open, setOpen] = useState('1');
-	
-	const downloadIsCalled = useRef(false);
+
+	//const downloadIsCalled = useRef(false);
 
 	//this gets called every render
 	const useEffectCalls = useRef(0);
@@ -36,45 +36,48 @@ const AnnotateFile = (props) => {
 		console.log("Invoked changeHandler");
 	};
 
-	const handleSubmission = () => {
-		const formData = new FormData();
-		const filename = selectedFile['name'];
-		let fileIsValid = false;
-		//let fileExtension;
-		for(let fileType of props.file_formats){
-			if (filename.endsWith("." + fileType)){
-				fileIsValid = true;
-				//fileExtension = "." + fileType;
-				break;
-			}
-		}
-		if(fileIsValid){
-			formData.append('file', selectedFile);
-
-			fetch(
-				'http://localhost:5000/' + subsection,
-				{
-					method: 'POST',
-					/*headers:{
-						"access-control-allow-origin" : "*"
-					},*/
-					body: formData
+	const handleSubmission = (subsection) => {
+		if (selectedFile !== undefined) {
+			const formData = new FormData();
+			const filename = selectedFile['name'];
+			let fileIsValid = false;
+			//let fileExtension;
+			for (let fileType of props.file_formats) {
+				if (filename.endsWith("." + fileType)) {
+					fileIsValid = true;
+					//fileExtension = "." + fileType;
+					break;
 				}
-			)
+			}
+			if (fileIsValid) {
+				formData.append('file', selectedFile);
 
-			.then((response) => {
-				return response.text();
-				//result = response.json();
-				//console.log(result);
-			})
+				fetch(
+					'http://localhost:5000/' + subsection,
+					{
+						method: 'POST',
+						/*headers:{
+							"access-control-allow-origin" : "*"
+						},*/
+						body: formData
+					}
+				)
 
-			.then((responseText) => {
-				setResult([responseText, true]);
-			})
+					.then((response) => {
+						return response.text();
+						//result = response.json();
+						//console.log(result);
+					})
+
+					.then((responseText) => {
+						setResult([responseText, true]);
+					})
+			} else {
+				alert("ERROR: Invalid file format used");
+			}
 		} else {
-			alert("ERROR: Invalid file format used");
+			alert("ERROR: Please select a file first");
 		}
-
 	};
 
 	const fileExtensionsString = (fileExtensionsList) => {
@@ -87,46 +90,51 @@ const AnnotateFile = (props) => {
 
 	const toggle = (id) => {
 		if (open === id) {
-		  setOpen();
+			setOpen();
 		} else {
-		  setOpen(id);
+			setOpen(id);
 		}
 	};
-	
 
-	if(!fileIsAnnotated){
-	return (<div>
-		<form action="/">
-			<input type="submit" value="Home" />
-		</form>
-		<h1>Choose File</h1>
-		<p>{props.description} {fileExtensionsString(props.file_formats)}</p>
 
-		<input type="file" name="file" onChange={changeHandler} accept={fileExtensionsHTML(props.file_formats)}/>
-		<button onClick={handleSubmission}>Submit</button>
-	</div>)
+	if (!fileIsAnnotated) {
+		return (<div>
+			<form action="/">
+				<input type="submit" value="Home" />
+			</form>
+			<h1>Choose File</h1>
+			<p>{props.description} {fileExtensionsString(props.file_formats)}</p>
+
+			<input type="file" name="file" onChange={changeHandler} accept={fileExtensionsHTML(props.file_formats)} />
+			{Object.keys(props.buttonList).map(key => {
+				return <Button onClick={() => handleSubmission(props.buttonList[key])}>{key}</Button>;
+			})}
+		</div>)
 	} else {
 		const xml = beautify(result);
 		console.log("Beautify result: " + result);
-		
+
 		let trimmedString = xml.substring(xml.indexOf(">")).replace(/>/, "");
 		console.log("trimmedString: " + trimmedString);
-		
+
 		let finalString = trimmedString.substring(trimmedString.indexOf("<"));
 		console.log("finalString: " + finalString);
 
-		if(!downloadIsCalled.current){
-			//console.log("Download called");
-			//download(finalString, (selectedFile['name'] + ".xml"));
+		//if(!downloadIsCalled.current){
+		//console.log("Download called");
+		//download(finalString, (selectedFile['name'] + ".xml"));
 
-			//downloadIsCalled.current = !downloadIsCalled.current;
-		}
+		//downloadIsCalled.current = !downloadIsCalled.current;
+		//}
 
 		const downloadFile = () => {
 			download(finalString, (selectedFile['name'] + ".xml"));
 		}
 
 		return (<div>
+			<form action={document.URL}>
+				<input type="submit" value="Upload a File" />
+			</form>
 			<Accordion open={open} toggle={toggle}>
 				<AccordionItem>
 					<AccordionHeader targetId="1">{selectedFile['name']}</AccordionHeader><Button onClick={downloadFile}>Download</Button>
@@ -136,7 +144,7 @@ const AnnotateFile = (props) => {
 				</AccordionItem>
 			</Accordion>
 		</div>);
-		
+
 		//return (<div className="xml">{finalString}</div>);
 	}
 }

@@ -95,11 +95,18 @@ def upload_file_srcml():
             #file.close()
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            response = send_from_directory(app.config['RESULTS_FOLDER'], filename + ".xml", as_attachment=True)
-            print(response)
-            os.remove(os.path.join(app.config['RESULTS_FOLDER'], filename + ".xml"))
-            return response
+            #response = send_from_directory(app.config['RESULTS_FOLDER'], filename + ".xml", as_attachment=True)
+            #print(response)
+            #os.remove(os.path.join(app.config['RESULTS_FOLDER'], filename + ".xml"))
+            #return response
             #return 'SUCCESS'
+
+            output_file = open(os.path.join(app.config['RESULTS_FOLDER'], filename + ".xml"), 'r')
+            output = output_file.read()
+            output_file.close()
+            os.remove(os.path.join(app.config['RESULTS_FOLDER'], filename + ".xml"))
+            return output
+            
 
     return render_template('upload_file.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FILE_EXTENSIONS)), file_types_html=allowed_file_formats_html(list(ALLOWED_FILE_EXTENSIONS)), file_types_js=allowed_file_formats_js(list(ALLOWED_FILE_EXTENSIONS)))
 

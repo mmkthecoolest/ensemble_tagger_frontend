@@ -1,9 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from './templates/Home';
-import UploadFileSrcML from './templates/UploadFileSrcML';
+import UploadFile from './templates/UploadFile';
 import UploadFolderSrcML from './templates/UploadFolderSrcML';
-import AnnotateFile from "./templates/AnnotateFile";
+//import AnnotateFile from "./templates/AnnotateFile";
 import 'bootstrap/dist/css/bootstrap.min.css';
 //import './App.css';
 
@@ -14,9 +14,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/upload_file_srcml" element={<UploadFileSrcML />} />
-        <Route path="/upload_folder_srcml" element={<UploadFolderSrcML />}/>
-        <Route path="/upload_file_annotate" element={<AnnotateFile title="Ensemble Tagger" description="Instructions: please use the following file formats for upload: " subsection="upload_file_annotate" file_formats={["java", "cpp", "c", "h"]}/>}/>
+        <Route path="/upload_file" element={<UploadFile />} />
+        <Route path="/upload_folder_srcml" element={<UploadFolderSrcML />} />
 
       </Routes>
     </BrowserRouter>
