@@ -19,6 +19,7 @@ const AnnotateFile = (props) => {
 	const [selectedFile, setSelectedFile] = useState();
 	const [[result, fileIsAnnotated], setResult] = useState(["", false]);
 	const [open, setOpen] = useState('1');
+	const [fileIsSubmitted, setFileIsSubmitted] = useState(false);
 
 	//const downloadIsCalled = useRef(false);
 
@@ -72,6 +73,8 @@ const AnnotateFile = (props) => {
 					.then((responseText) => {
 						setResult([responseText, true]);
 					})
+
+				setFileIsSubmitted(true);
 			} else {
 				alert("ERROR: Invalid file format used");
 			}
@@ -97,7 +100,7 @@ const AnnotateFile = (props) => {
 	};
 
 
-	if (!fileIsAnnotated) {
+	if (!fileIsAnnotated && !fileIsSubmitted) {
 		return (<div>
 			<form action="/">
 				<input type="submit" value="Home" />
@@ -109,6 +112,10 @@ const AnnotateFile = (props) => {
 			{Object.keys(props.buttonList).map(key => {
 				return <Button onClick={() => handleSubmission(props.buttonList[key])}>{key}</Button>;
 			})}
+		</div>)
+	} if (!fileIsAnnotated) {
+		return (<div>
+			<h1>Please Wait...</h1>
 		</div>)
 	} else {
 		const xml = beautify(result);
