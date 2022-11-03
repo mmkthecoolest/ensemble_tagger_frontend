@@ -316,6 +316,43 @@ def upload_folder_annotate():
 
     return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
 
+@app.route("/upload_folder", methods=['POST'])
+@cross_origin()
+def upload_folder():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        allowed_compressed_folder_result = allowed_compressed_folder(file.filename)
+        if file and allowed_compressed_folder_result[0]:
+            compressed_folder_extension = allowed_compressed_folder_result[1]
+            # step 1: extract contents of compressed folder into the upload folder using shutil
+            filename = secure_filename(file.filename)
+            # print(filename)
+            unique_folder_identifier = str(uuid4())
+            unique_upload_folder = app.config['UPLOAD_FOLDER'] + "-" + unique_folder_identifier
+            #unique_results_folder = app.config['RESULTS_FOLDER'] + "-" + unique_folder_identifier
+            unique_extract_folder = app.config['EXTRACT_FOLDER'] + "-" + unique_folder_identifier
+
+            if not os.path.isdir(unique_upload_folder):
+                os.mkdir(unique_upload_folder)
+
+            file.save(os.path.join(unique_upload_folder, filename))
+
+
+            # step 6: Send compressed folder and delete remaining contents
+            #response = send_from_directory(unique_results_folder, RESULT_FILE_NAME + "." + compressed_folder_extension, as_attachment=True)
+            #os.remove(os.path.join(unique_results_folder, RESULT_FILE_NAME + "." + compressed_folder_extension))
+            #shutil.rmtree(os.path.join(unique_results_folder, unique_extract_folder))
+            #os.rmdir(unique_results_folder)
+            return unique_folder_identifier
 
 @app.route('/<identifier_type>/<identifier_name>/<identifier_context>')
 def listen(identifier_type, identifier_name, identifier_context):
