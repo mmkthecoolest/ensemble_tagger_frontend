@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from './templates/Home';
 import UploadFile from './templates/UploadFile';
 import UploadFolderSrcML from './templates/UploadFolderSrcML';
+import UploadFolder from "./templates/UploadFolder";
 //import AnnotateFile from "./templates/AnnotateFile";
 import 'bootstrap/dist/css/bootstrap.min.css';
 //import './App.css';
@@ -16,7 +17,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/upload_file" element={<UploadFile />} />
         <Route path="/upload_folder_srcml" element={<UploadFolderSrcML />} />
-
+        <Route path="/upload_folder" element={<UploadFolder />} />
       </Routes>
     </BrowserRouter>
   );

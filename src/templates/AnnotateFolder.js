@@ -12,7 +12,7 @@ import {
 } from 'reactstrap';
 //import download from 'downloadjs';
 
-const AnnotateFile = (props) => {
+const AnnotateFolder = (props) => {
 	const title = props.title;
 	//const subsection = props.subsection;
 
@@ -99,6 +99,33 @@ const AnnotateFile = (props) => {
 		}
 	};
 
+	const stringToXMLDom = (string) => {
+		const parser=new DOMParser();
+		return parser.parseFromString(string,"text/xml");
+	}
+
+	const unitsToAccordions = (units) => {
+		//var targetIdNum = 0;
+		console.log("Number of units to be generated: " + units.length)
+
+		const getFileNameFromUnit = (unit) => {
+			//unitXML = stringToXMLDom(unit);
+			let fullFileName = unit.getAttribute("filename");
+
+			return fullFileName.split("/").at(-1);
+		}
+
+		return <Accordion open={open} toggle={toggle}>
+		{Object.keys(units).map(key => {
+			return <AccordionItem>
+			<AccordionHeader targetId={units.indexOf(units[key])+1}>{getFileNameFromUnit(units[key])}</AccordionHeader>
+			<AccordionBody className="xml" accordionId={units.indexOf(units[key])+1}>
+			{units[key].outerHTML}
+			</AccordionBody>
+		</AccordionItem>;
+		})}</Accordion>;
+	}
+
 
 	if (!fileIsAnnotated && !fileIsSubmitted) {
 		return (<div>
@@ -127,6 +154,30 @@ const AnnotateFile = (props) => {
 		let finalString = trimmedString.substring(trimmedString.indexOf("<"));
 		console.log("finalString: " + finalString);
 
+		const xmlTest = stringToXMLDom(finalString);
+		const errorNode = xmlTest.querySelector('parsererror');
+		let accordions=null;
+		if (errorNode){
+			console.log("XML parsing failed");
+		} else {
+			console.log("XML parsing passed");
+			console.log("Showing unit tag content: " + xmlTest.getElementsByTagName('unit')[0].innerHTML);
+
+			console.log("Number of units found in first parse: " + xmlTest.getElementsByTagName('unit').length);
+			
+			let outerHTMLlist = [];
+			
+			//create a list of outerHTMLs from innerUnits
+			for(let step = 0; step < Array.from(xmlTest.getElementsByTagName('unit')).slice(1).length; step++){
+				let listItem = Array.from(xmlTest.getElementsByTagName('unit')).slice(1)[step].outerHTML;
+				console.log("Unit " + step + " outerHTML: " + listItem);
+
+				outerHTMLlist.push(listItem);
+			}
+			
+			accordions = unitsToAccordions(Array.from(xmlTest.getElementsByTagName('unit')).slice(1));
+		}
+
 		//if(!downloadIsCalled.current){
 		//console.log("Download called");
 		//download(finalString, (selectedFile['name'] + ".xml"));
@@ -142,18 +193,11 @@ const AnnotateFile = (props) => {
 			<form action={document.URL}>
 				<input type="submit" value="Upload a File" />
 			</form>
-			<Accordion open={open} toggle={toggle}>
-				<AccordionItem>
-					<AccordionHeader targetId="1">{selectedFile['name']}</AccordionHeader><Button onClick={downloadFile}>Download</Button>
-					<AccordionBody className="xml" accordionId="1">
-						{finalString}
-					</AccordionBody>
-				</AccordionItem>
-			</Accordion>
+			{accordions}
 		</div>);
 
 		//return (<div className="xml">{finalString}</div>);
 	}
 }
 
-export default AnnotateFile;
+export default AnnotateFolder;
