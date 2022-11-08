@@ -173,9 +173,9 @@ def upload_file_annotate():
 #    return output
 
 
-@app.route("/upload_folder_srcml", methods=['GET', 'POST'])
+@app.route("/upload_folder_srcml_download", methods=['GET', 'POST'])
 @cross_origin()
-def upload_folder_srcml():
+def upload_folder_srcml_download():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -316,8 +316,80 @@ def upload_folder_annotate():
 
     return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
 
-@app.route("/upload_folder", methods=['POST'])
+@app.route("/upload_folder_srcml", methods=['GET', 'POST'])
 @cross_origin()
+def upload_folder_srcml():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        allowed_compressed_folder_result = allowed_compressed_folder(file.filename)
+        if file and allowed_compressed_folder_result[0]:
+            compressed_folder_extension = allowed_compressed_folder_result[1]
+            # step 1: extract contents of compressed folder into the upload folder using shutil
+            filename = secure_filename(file.filename)
+            # print(filename)
+            unique_folder_identifier = str(uuid4())
+            unique_upload_folder = app.config['UPLOAD_FOLDER'] + "-" + unique_folder_identifier
+            #unique_results_folder = app.config['RESULTS_FOLDER'] + "-" + unique_folder_identifier
+            unique_extract_folder = app.config['EXTRACT_FOLDER'] + "-" + unique_folder_identifier
+
+            if not os.path.isdir(unique_upload_folder):
+                os.mkdir(unique_upload_folder)
+
+            file.save(os.path.join(unique_upload_folder, filename))
+
+            if not os.path.isdir(unique_extract_folder):
+                os.mkdir(unique_extract_folder)
+
+            shutil.unpack_archive(os.path.join(
+                unique_upload_folder, filename), unique_extract_folder)
+
+            os.remove(os.path.join(unique_upload_folder, filename))
+            os.rmdir(unique_upload_folder)
+
+            # step 2: scan for a directory name (must be 1 directory)
+            directory_list = list(os.scandir(unique_extract_folder))
+            if len(directory_list) > 0:
+                #RESULT_FILE_NAME = "result" + "-" + unique_folder_identifier + ".xml"
+
+                session.pop('_flashes', None)
+                print("Name: " + directory_list[0].name)
+                print("Path: " + directory_list[0].path)
+                # step 3: use srcml with dir parameter and output to result folder
+                output = subprocess.run(
+                ["srcml", unique_extract_folder], text=True, capture_output=True).stdout
+
+                # step 4: delete folder contents in the extract folder
+                shutil.rmtree(unique_extract_folder)
+
+                # step 5: make a new zipped archive of the contents
+                #output = subprocess.run(["./../build/bin/grabidentifiers", RESULT_FILE_NAME], text=True, capture_output=True).stdout
+                #os.remove(RESULT_FILE_NAME)
+
+                # step 6: Send compressed folder and delete remaining contents
+                #response = send_from_directory(unique_results_folder, RESULT_FILE_NAME + "." + compressed_folder_extension, as_attachment=True)
+                #os.remove(os.path.join(unique_results_folder, RESULT_FILE_NAME + "." + compressed_folder_extension))
+                #shutil.rmtree(os.path.join(unique_results_folder, unique_extract_folder))
+                #os.rmdir(unique_results_folder)
+                return output
+            else:
+                flash("ERROR: Compressed folder is empty")
+                return redirect(request.url)
+
+            
+
+    return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
+
+#@app.route("/upload_folder", methods=['POST'])
+#@cross_origin()
 def upload_folder():
     if request.method == 'POST':
         # check if the post request has the file part

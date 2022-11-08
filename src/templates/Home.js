@@ -5,7 +5,7 @@ const Home = () => {
 		<form action="upload_file">
 			<input type="submit" value="Upload a File" />
 		</form>
-		<form action="upload_folder_srcml">
+		<form action="upload_folder">
 			<input type="submit" value="Upload a Folder" />
 		</form>
 	</div>)

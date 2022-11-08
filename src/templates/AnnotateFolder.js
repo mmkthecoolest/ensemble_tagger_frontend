@@ -20,8 +20,7 @@ const AnnotateFolder = (props) => {
 	const [[result, fileIsAnnotated], setResult] = useState(["", false]);
 	const [open, setOpen] = useState('1');
 	const [fileIsSubmitted, setFileIsSubmitted] = useState(false);
-
-	//const downloadIsCalled = useRef(false);
+	const [downloadRequest, setDownloadRequest] = useState();
 
 	//this gets called every render
 	const useEffectCalls = useRef(0);
@@ -37,11 +36,13 @@ const AnnotateFolder = (props) => {
 		console.log("Invoked changeHandler");
 	};
 
-	const handleSubmission = (subsection) => {
+	const handleSubmission = (requestsToCall) => {
 		if (selectedFile !== undefined) {
 			const formData = new FormData();
 			const filename = selectedFile['name'];
 			let fileIsValid = false;
+			setDownloadRequest(requestsToCall[1]);
+			console.log("Download request subsection: " + downloadRequest);
 			//let fileExtension;
 			for (let fileType of props.file_formats) {
 				if (filename.endsWith("." + fileType)) {
@@ -54,7 +55,7 @@ const AnnotateFolder = (props) => {
 				formData.append('file', selectedFile);
 
 				fetch(
-					'http://localhost:5000/' + subsection,
+					'http://localhost:5000/' + requestsToCall[0],
 					{
 						method: 'POST',
 						/*headers:{
@@ -75,6 +76,54 @@ const AnnotateFolder = (props) => {
 					})
 
 				setFileIsSubmitted(true);
+			} else {
+				alert("ERROR: Invalid file format used");
+			}
+		} else {
+			alert("ERROR: Please select a file first");
+		}
+	};
+
+	const handleDownload = () => {
+		if (selectedFile !== undefined) {
+			const formData = new FormData();
+			const filename = selectedFile['name'];
+			let fileIsValid = false;
+			let fileExtension;
+			console.log("Download request subsection: " + downloadRequest);
+			for (let fileType of props.file_formats) {
+				if (filename.endsWith("." + fileType)) {
+					fileIsValid = true;
+					fileExtension = "." + fileType;
+					break;
+				}
+			}
+			if (fileIsValid) {
+				formData.append('file', selectedFile);
+
+				fetch(
+					'http://localhost:5000/' + downloadRequest,
+					{
+						method: 'POST',
+						/*headers:{
+							"access-control-allow-origin" : "*"
+						},*/
+						body: formData
+					}
+				)
+
+				.then((response) => {
+					return response.blob();
+					//result = response.json();
+					//console.log(result);
+				})
+
+				.then((responseBlob) => {
+					download(responseBlob, filename.replace(new RegExp("(\\" + fileExtension + "$)"), ""))
+					//setFileIsSubmitted(false)
+				});
+
+				//setFileIsSubmitted(true);
 			} else {
 				alert("ERROR: Invalid file format used");
 			}
@@ -118,8 +167,8 @@ const AnnotateFolder = (props) => {
 		return <Accordion open={open} toggle={toggle}>
 		{Object.keys(units).map(key => {
 			return <AccordionItem>
-			<AccordionHeader targetId={units.indexOf(units[key])+1}>{getFileNameFromUnit(units[key])}</AccordionHeader>
-			<AccordionBody className="xml" accordionId={units.indexOf(units[key])+1}>
+			<AccordionHeader targetId={(units.indexOf(units[key])+1).toString()}>{getFileNameFromUnit(units[key])}</AccordionHeader>
+			<AccordionBody className="xml" accordionId={(units.indexOf(units[key])+1).toString()}>
 			{units[key].outerHTML}
 			</AccordionBody>
 		</AccordionItem>;
@@ -161,19 +210,6 @@ const AnnotateFolder = (props) => {
 			console.log("XML parsing failed");
 		} else {
 			console.log("XML parsing passed");
-			console.log("Showing unit tag content: " + xmlTest.getElementsByTagName('unit')[0].innerHTML);
-
-			console.log("Number of units found in first parse: " + xmlTest.getElementsByTagName('unit').length);
-			
-			let outerHTMLlist = [];
-			
-			//create a list of outerHTMLs from innerUnits
-			for(let step = 0; step < Array.from(xmlTest.getElementsByTagName('unit')).slice(1).length; step++){
-				let listItem = Array.from(xmlTest.getElementsByTagName('unit')).slice(1)[step].outerHTML;
-				console.log("Unit " + step + " outerHTML: " + listItem);
-
-				outerHTMLlist.push(listItem);
-			}
 			
 			accordions = unitsToAccordions(Array.from(xmlTest.getElementsByTagName('unit')).slice(1));
 		}
@@ -185,14 +221,11 @@ const AnnotateFolder = (props) => {
 		//downloadIsCalled.current = !downloadIsCalled.current;
 		//}
 
-		const downloadFile = () => {
-			download(finalString, (selectedFile['name'] + ".xml"));
-		}
-
 		return (<div>
 			<form action={document.URL}>
-				<input type="submit" value="Upload a File" />
+				<input type="submit" value="Upload a Folder" />
 			</form>
+			<Button onClick={handleDownload}>Download Result Archive</Button>
 			{accordions}
 		</div>);
 
