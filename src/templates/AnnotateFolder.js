@@ -21,6 +21,7 @@ const AnnotateFolder = (props) => {
 	const [open, setOpen] = useState('1');
 	const [fileIsSubmitted, setFileIsSubmitted] = useState(false);
 	const [downloadRequest, setDownloadRequest] = useState();
+	const [isDownloadReady, setIsDownloadReady] = useState(true);
 
 	//this gets called every render
 	const useEffectCalls = useRef(0);
@@ -100,6 +101,7 @@ const AnnotateFolder = (props) => {
 			}
 			if (fileIsValid) {
 				formData.append('file', selectedFile);
+				setIsDownloadReady(false);
 
 				fetch(
 					'http://localhost:5000/' + downloadRequest,
@@ -119,7 +121,8 @@ const AnnotateFolder = (props) => {
 				})
 
 				.then((responseBlob) => {
-					download(responseBlob, filename.replace(new RegExp("(\\" + fileExtension + "$)"), ""))
+					download(responseBlob, filename.replace(new RegExp("(\\" + fileExtension + "$)"), ""));
+					setIsDownloadReady(true);
 					//setFileIsSubmitted(false)
 				});
 
@@ -225,7 +228,7 @@ const AnnotateFolder = (props) => {
 			<form action={document.URL}>
 				<input type="submit" value="Upload a Folder" />
 			</form>
-			<Button onClick={handleDownload}>Download Result Archive</Button>
+			<Button onClick={handleDownload} disabled={(!isDownloadReady)}>Download Result Archive</Button>
 			{accordions}
 		</div>);
 

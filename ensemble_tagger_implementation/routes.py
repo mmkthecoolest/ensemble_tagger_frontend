@@ -312,7 +312,94 @@ def upload_folder_annotate():
                 flash("ERROR: Compressed folder is empty")
                 return redirect(request.url)
 
-            
+    return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
+
+@app.route("/upload_folder_annotate_download", methods=['GET', 'POST'])
+@cross_origin()
+def upload_folder_annotate_download():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        allowed_compressed_folder_result = allowed_compressed_folder(file.filename)
+        if file and allowed_compressed_folder_result[0]:
+            compressed_folder_extension = allowed_compressed_folder_result[1]
+            # step 1: extract contents of compressed folder into the upload folder using shutil
+            filename = secure_filename(file.filename)
+            # print(filename)
+            unique_folder_identifier = str(uuid4())
+            unique_upload_folder = app.config['UPLOAD_FOLDER'] + "-" + unique_folder_identifier
+            unique_results_folder = app.config['RESULTS_FOLDER'] + "-" + unique_folder_identifier
+            unique_extract_folder = app.config['EXTRACT_FOLDER'] + "-" + unique_folder_identifier
+
+            if not os.path.isdir(unique_upload_folder):
+                os.mkdir(unique_upload_folder)
+
+            file.save(os.path.join(unique_upload_folder, filename))
+
+            if not os.path.isdir(unique_extract_folder):
+                os.mkdir(unique_extract_folder)
+
+            shutil.unpack_archive(os.path.join(
+                unique_upload_folder, filename), unique_extract_folder)
+
+            os.remove(os.path.join(unique_upload_folder, filename))
+            os.rmdir(unique_upload_folder)
+
+            # step 2: scan for a directory name (must be 1 directory)
+            directory_list = list(os.scandir(unique_extract_folder))
+            if len(directory_list) > 0:
+                RESULT_FILE_NAME = "result" + "-" + unique_folder_identifier + ".xml"
+
+                session.pop('_flashes', None)
+                print("Name: " + directory_list[0].name)
+                print("Path: " + directory_list[0].path)
+                # step 3: use srcml with output parameter and output to result file
+                subprocess.run(
+                ["srcml", unique_extract_folder, "-o", RESULT_FILE_NAME])
+
+                # step 4: delete folder contents in the extract folder
+                shutil.rmtree(unique_extract_folder)
+
+                # step 5: annotate file and remove srcml
+                output = subprocess.run(["./../build/bin/grabidentifiers", RESULT_FILE_NAME], text=True, capture_output=True).stdout
+                
+                # annotate srcml file
+                result_file_writer = open(RESULT_FILE_NAME, "w")
+                result_file_writer.write("<" + output.split("<", 1)[1])
+
+                ANNOTATED_FOLDER_NAME = "annotated" + "-" + unique_folder_identifier
+
+                # remove srcml tags and restore to directory structure
+                subprocess.run(["srcml", RESULT_FILE_NAME, "--to-dir", ANNOTATED_FOLDER_NAME])
+                os.remove(RESULT_FILE_NAME)
+
+                # re-add srcml while keeping directory structure, delete annotated folder
+                subprocess.run(["srcml", ANNOTATED_FOLDER_NAME, "--to-dir", unique_results_folder])
+                shutil.rmtree(ANNOTATED_FOLDER_NAME)
+
+                #create compressed folder
+                shutil.make_archive(os.path.join(unique_results_folder,ANNOTATED_FOLDER_NAME,unique_extract_folder),ALLOWED_FOLDER_EXTENSIONS[compressed_folder_extension],os.path.join(unique_results_folder,ANNOTATED_FOLDER_NAME),unique_extract_folder)
+
+
+                # step 6: Send compressed folder and delete remaining contents
+                #print("Zip path: " + str(os.path.isfile(os.path.join(unique_results_folder,ANNOTATED_FOLDER_NAME,unique_extract_folder + "." + compressed_folder_extension))))
+                response = send_from_directory(os.path.join(unique_results_folder,ANNOTATED_FOLDER_NAME), unique_extract_folder + "." + compressed_folder_extension, as_attachment=True)
+                shutil.rmtree(unique_results_folder)
+                #os.remove(os.path.join(unique_results_folder, RESULT_FILE_NAME + "." + compressed_folder_extension))
+                #shutil.rmtree(os.path.join(unique_results_folder, unique_extract_folder))
+                #os.rmdir(unique_results_folder)
+                return response
+            else:
+                flash("ERROR: Compressed folder is empty")
+                return redirect(request.url)
 
     return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
 
