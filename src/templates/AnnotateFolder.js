@@ -171,6 +171,7 @@ const AnnotateFolder = (props) => {
 		{Object.keys(units).map(key => {
 			return <AccordionItem>
 			<AccordionHeader targetId={(units.indexOf(units[key])+1).toString()}>{getFileNameFromUnit(units[key])}</AccordionHeader>
+			<Button onClick={() => download(units[key].outerHTML, getFileNameFromUnit(units[key]) + ".xml")}>Download File</Button>
 			<AccordionBody className="xml" accordionId={(units.indexOf(units[key])+1).toString()}>
 			{units[key].outerHTML}
 			</AccordionBody>
