@@ -135,6 +135,11 @@ const AnnotateFolder = (props) => {
 		}
 	};
 
+	const hiddenFileInput = React.useRef(null);
+	const handleCustomUploadButtonClick = event => {
+		hiddenFileInput.current.click();
+	};
+
 	const fileExtensionsString = (fileExtensionsList) => {
 		return fileExtensionsList.slice(0, fileExtensionsList.length - 1).join(", ") + " or " + fileExtensionsList.at(-1);
 	}
@@ -181,20 +186,27 @@ const AnnotateFolder = (props) => {
 
 
 	if (!fileIsAnnotated && !fileIsSubmitted) {
-		return (<div>
+		return (<div className="menu-page">
 			<form action="/">
-				<input type="submit" value="Home" />
+				<input type="submit" value="🏠 Home" className="upload-button"/>
 			</form>
 			<h1>Choose File</h1>
 			<p>{props.description} {fileExtensionsString(props.file_formats)}</p>
 
-			<input type="file" name="file" onChange={changeHandler} accept={fileExtensionsHTML(props.file_formats)} />
+			<Button onClick={handleCustomUploadButtonClick} className="upload-button">
+        		📁 File Select
+      		</Button>
+			<span className="uploaded-file-text">{selectedFile !== undefined ? "Selected file: " + selectedFile['name']: 'File not selected'}</span>
+			
+			<input type="file" name="file" onChange={changeHandler} accept={fileExtensionsHTML(props.file_formats)} style={{display:'none'}} ref={hiddenFileInput}/>
+			<div className="home-buttons-flexbox">
 			{Object.keys(props.buttonList).map(key => {
-				return <Button onClick={() => handleSubmission(props.buttonList[key])}>{key}</Button>;
+				return <Button onClick={() => handleSubmission(props.buttonList[key])} className="custom-button">{key}</Button>;
 			})}
+			</div>
 		</div>)
 	} if (!fileIsAnnotated) {
-		return (<div>
+		return (<div className="menu-page">
 			<h1>Please Wait...</h1>
 		</div>)
 	} else {

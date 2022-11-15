@@ -5,7 +5,7 @@ import UploadFile from './templates/UploadFile';
 import UploadFolder from "./templates/UploadFolder";
 //import AnnotateFile from "./templates/AnnotateFile";
 import 'bootstrap/dist/css/bootstrap.min.css';
-//import './App.css';
+import './App.css';
 
 function App() {
   // usestate for setting a javascript
