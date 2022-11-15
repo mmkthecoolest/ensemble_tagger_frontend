@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import beautify from 'xml-beautifier';
 import download from 'downloadjs';
-import './XMLRender.css'
+//import './XMLRender.css'
 
 import {
 	Accordion,
@@ -150,13 +150,14 @@ const AnnotateFile = (props) => {
 			download(finalString, (selectedFile['name'] + ".xml"));
 		}
 
-		return (<div>
+		return (<div className="accordion-page">
+			<h1>Results</h1>
 			<form action={document.URL}>
-				<input type="submit" value="Upload a File" />
+				<input type="submit" value="Upload Another File" className="custom-button"/>
 			</form>
-			<Accordion open={open} toggle={toggle}>
-				<AccordionItem>
-					<AccordionHeader targetId="1">{selectedFile['name']}</AccordionHeader><Button onClick={downloadFile}>Download</Button>
+			<Accordion open={open} toggle={toggle} className="accordion accordion-div">
+				<AccordionItem className="accordion">
+					<AccordionHeader targetId="1"><div>{selectedFile['name']}</div></AccordionHeader><Button onClick={downloadFile} className="accordion-download-button">Download</Button>
 					<AccordionBody className="xml" accordionId="1">
 						{finalString}
 					</AccordionBody>

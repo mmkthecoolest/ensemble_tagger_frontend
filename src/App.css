@@ -9,6 +9,28 @@ h1 {
   font-size: 1.3em;
   }
 
+.accordion-page {
+  padding-top: 10em;
+}
+
+.accordion-download-button {
+  width: 100%;
+  border: none;
+  
+  border-top: solid 2px;
+}
+
+.accordion-div {
+  margin-top: 10px;
+}
+
+.accordion-item {
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  border: none;
+}
+
 body {
   max-width: 70em;
   margin-left: auto;
@@ -36,24 +58,58 @@ body {
   justify-content: space-around;
 }
 
+.buttons-flexbox {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
 .uploaded-file-text{
   margin-left: 1em;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
+.xml {white-space: pre-wrap;}
+
+.custom-button:disabled {
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: dark) {  
+
+  body, .accordion {
     background: #333333;
     color: #dddddd;
   }
 
-  .custom-button, .upload-button{
+  .custom-button, .upload-button {
     color: #333333;
     background: #dddddd;
+    transition: background-color 0.25s;
+  }
+
+  .custom-button:hover, .upload-button:hover {
+    background-color: #ffffff;
+    color: #333333;
+  }
+
+  .accordion-button, .accordion-download-button{
+    background: #555555;
+    color: #dddddd;
+  }
+
+  .accordion-button:not(.collapsed){
+    background: #777777;
+    color: #ffffff;
+  }
+
+  .xml {
+    background: #222222;
+    color: #dddddd;
   }
 }
 
 @media (prefers-color-scheme: light) {
-  body {
+  body, .accordion {
     background: #dddddd;
     color: #333333;
   }
@@ -61,5 +117,26 @@ body {
   .custom-button, .upload-button{
     color: #dddddd;
     background: #333333;
+    transition: background-color 0.25s;
+  }
+
+  .custom-button:hover, .upload-button:hover {
+    background-color: #555555;
+    color: #dddddd;
+  }
+
+  .accordion-button, .accordion-download-button{
+    background: #cccccc;
+    color: #333333;
+  }
+
+  .accordion-button:not(.collapsed){
+    background: #888888;
+    color: #eeeeee;
+  }
+
+  .xml {
+    background: #eeeeee;
+    color: #333333;
   }
 }

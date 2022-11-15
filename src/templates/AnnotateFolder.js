@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import beautify from 'xml-beautifier';
 import download from 'downloadjs';
-import './XMLRender.css'
+//import './XMLRender.css'
 
 import {
 	Accordion,
@@ -172,11 +172,11 @@ const AnnotateFolder = (props) => {
 			return fullFileName.split("/").at(-1);
 		}
 
-		return <Accordion open={open} toggle={toggle}>
+		return <Accordion open={open} toggle={toggle} className="accordion accordion-div">
 		{Object.keys(units).map(key => {
-			return <AccordionItem>
+			return <AccordionItem className="accordion">
 			<AccordionHeader targetId={(units.indexOf(units[key])+1).toString()}>{getFileNameFromUnit(units[key])}</AccordionHeader>
-			<Button onClick={() => download(units[key].outerHTML, getFileNameFromUnit(units[key]) + ".xml")}>Download File</Button>
+			<Button onClick={() => download(units[key].outerHTML, getFileNameFromUnit(units[key]) + ".xml")} className="accordion-download-button">Download File</Button>
 			<AccordionBody className="xml" accordionId={(units.indexOf(units[key])+1).toString()}>
 			{units[key].outerHTML}
 			</AccordionBody>
@@ -237,11 +237,14 @@ const AnnotateFolder = (props) => {
 		//downloadIsCalled.current = !downloadIsCalled.current;
 		//}
 
-		return (<div>
+		return (<div className="accordion-page">
+			<h1>Results</h1>
+			<div className="buttons-flexbox">
 			<form action={document.URL}>
-				<input type="submit" value="Upload a Folder" />
+				<input type="submit" value="Upload Another Folder" className="custom-button"/>
 			</form>
-			<Button onClick={handleDownload} disabled={(!isDownloadReady)}>Download Result Archive</Button>
+			<Button onClick={handleDownload} disabled={(!isDownloadReady)} className="custom-button">Download Result Archive</Button>
+			</div>
 			{accordions}
 		</div>);
 
