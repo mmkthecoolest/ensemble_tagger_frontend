@@ -238,7 +238,8 @@ def upload_folder_srcml_download():
                 return response
             else:
                 flash("ERROR: Compressed folder is empty")
-                return redirect(request.url)
+                shutil.rmtree(unique_extract_folder)
+                return "EMPTY_FOLDER_ERROR"
 
             
 
@@ -310,7 +311,8 @@ def upload_folder_annotate():
                 return output
             else:
                 flash("ERROR: Compressed folder is empty")
-                return redirect(request.url)
+                shutil.rmtree(unique_extract_folder)
+                return "EMPTY_FOLDER_ERROR"
 
     return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
 
@@ -399,7 +401,8 @@ def upload_folder_annotate_download():
                 return response
             else:
                 flash("ERROR: Compressed folder is empty")
-                return redirect(request.url)
+                shutil.rmtree(unique_extract_folder)
+                return "EMPTY_FOLDER_ERROR"
 
     return render_template('upload_folder.html', file_types_phrase=allowed_file_formats_phrase(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_html=allowed_file_formats_html(list(ALLOWED_FOLDER_EXTENSIONS.keys())), file_types_js=allowed_file_formats_js(list(ALLOWED_FOLDER_EXTENSIONS.keys())))
 
@@ -469,7 +472,8 @@ def upload_folder_srcml():
                 return output
             else:
                 flash("ERROR: Compressed folder is empty")
-                return redirect(request.url)
+                shutil.rmtree(unique_extract_folder)
+                return "EMPTY_FOLDER_ERROR"
 
             
 

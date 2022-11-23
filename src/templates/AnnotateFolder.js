@@ -22,6 +22,7 @@ const AnnotateFolder = (props) => {
 	const [fileIsSubmitted, setFileIsSubmitted] = useState(false);
 	const [downloadRequest, setDownloadRequest] = useState();
 	const [isDownloadReady, setIsDownloadReady] = useState(true);
+	const [isFolderEmpty, setIsFolderEmpty] = useState(false);
 
 	//this gets called every render
 	const useEffectCalls = useRef(0);
@@ -54,7 +55,7 @@ const AnnotateFolder = (props) => {
 			}
 			if (fileIsValid) {
 				formData.append('file', selectedFile);
-
+				setFileIsSubmitted(true);
 				fetch(
 					'http://localhost:5000/' + requestsToCall[0],
 					{
@@ -63,20 +64,26 @@ const AnnotateFolder = (props) => {
 							"access-control-allow-origin" : "*"
 						},*/
 						body: formData
-					}
-				)
+					})
 
 					.then((response) => {
+						
 						return response.text();
 						//result = response.json();
 						//console.log(result);
 					})
 
 					.then((responseText) => {
-						setResult([responseText, true]);
-					})
+						//console.log("Response Text: " + responseText);
 
-				setFileIsSubmitted(true);
+						if (responseText !== "EMPTY_FOLDER_ERROR"){
+							setResult([responseText, true]);
+						} else {
+							setIsFolderEmpty(true);
+							setFileIsSubmitted(false);
+							setSelectedFile(undefined);
+						}
+					})
 			} else {
 				alert("ERROR: Invalid file format used");
 			}
@@ -184,13 +191,13 @@ const AnnotateFolder = (props) => {
 		})}</Accordion>;
 	}
 
-
 	if (!fileIsAnnotated && !fileIsSubmitted) {
 		return (<div className="menu-page">
 			<form action="/">
 				<input type="submit" value="🏠 Home" className="upload-button"/>
 			</form>
 			<h1>Choose File</h1>
+			{isFolderEmpty ? <p className="empty-folder-warning">Please upload a non-empty compressed folder</p> : ""}
 			<p>{props.description} {fileExtensionsString(props.file_formats)}</p>
 
 			<Button onClick={handleCustomUploadButtonClick} className="upload-button">
@@ -205,7 +212,7 @@ const AnnotateFolder = (props) => {
 			})}
 			</div>
 		</div>)
-	} if (!fileIsAnnotated) {
+	} else if (!fileIsAnnotated) {
 		return (<div className="menu-page">
 			<h1>Please Wait...</h1>
 		</div>)
