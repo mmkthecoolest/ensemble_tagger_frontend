@@ -190,7 +190,7 @@ const AnnotateFolder = (props) => {
 					<form action="/">
 						<input type="submit" value="🏠 Home" className="upload-button" />
 					</form>
-					<h1>Choose File</h1>
+					<h1>Choose Folder</h1>
 					<FileUploader classes="drag-n-dropper" children={<div className='drag-n-dropper-text'>Drag and drop file or click here</div>} handleChange={dragNDropChangeHandler} name="file" types={props.file_formats} hoverTitle=" " />
 					{isFolderEmpty ? <p className="empty-folder-warning">Please upload a non-empty compressed folder</p> : ""}
 					<p>{props.description} {fileExtensionsString(props.file_formats)}</p>
