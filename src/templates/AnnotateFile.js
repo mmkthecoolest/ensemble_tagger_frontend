@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import beautify from 'xml-beautifier';
 import download from 'downloadjs';
+import { FileUploader } from "react-drag-drop-files";
 //import './XMLRender.css'
 
 import {
@@ -32,10 +33,11 @@ const AnnotateFile = (props) => {
 	});
 
 	//function used to assign file to UI
-	const changeHandler = (event) => {
-		setSelectedFile(event.target.files[0]);
-		console.log("Invoked changeHandler");
-	};
+	const dragNDropChangeHandler = (file) => {
+		setSelectedFile(file);
+		console.log("Invoked dragNDropChangeHandler");
+	}
+
 
 	const handleSubmission = (subsection) => {
 		if (selectedFile !== undefined) {
@@ -83,17 +85,8 @@ const AnnotateFile = (props) => {
 		}
 	};
 
-	const hiddenFileInput = React.useRef(null);
-	const handleCustomUploadButtonClick = event => {
-		hiddenFileInput.current.click();
-	};
-
 	const fileExtensionsString = (fileExtensionsList) => {
 		return fileExtensionsList.slice(0, fileExtensionsList.length - 1).join(", ") + " or " + fileExtensionsList.at(-1);
-	}
-
-	const fileExtensionsHTML = (fileExtensionsList) => {
-		return fileExtensionsList.map((extension) => "." + extension).join(",");
 	}
 
 	const toggle = (id) => {
@@ -106,29 +99,36 @@ const AnnotateFile = (props) => {
 
 
 	if (!fileIsAnnotated && !fileIsSubmitted) {
-		return (<div className="menu-page">
-			<form action="/">
-				<input type="submit" value="🏠 Home" className="upload-button"/>
-			</form>
-			<h1>Choose File</h1>
-			<p>{props.description} {fileExtensionsString(props.file_formats)}</p>
+		return (<div className="menu-page-height">
+			<div className="menu-page-align">
+				<div className="menu-page">
+					<form action="/">
+						<input type="submit" value="🏠 Home" className="upload-button" />
+					</form>
+					<h1>Choose File</h1>
+					<FileUploader classes="drag-n-dropper" children={<div className='drag-n-dropper-text'>Drag and drop file or click here</div>} handleChange={dragNDropChangeHandler} name="file" types={props.file_formats} hoverTitle=" " />
+					<p>{props.description} {fileExtensionsString(props.file_formats)}</p>
 
-			<Button onClick={handleCustomUploadButtonClick} className="upload-button">
-        		📁 File Select
-      		</Button>
-			<span className="uploaded-file-text">{selectedFile !== undefined ? "Selected file: " + selectedFile['name']: 'File not selected'}</span>
+					{selectedFile !== undefined ? "Selected file: " + selectedFile['name'] : 'File not selected'}
 
-			<input type="file" name="file" onChange={changeHandler} accept={fileExtensionsHTML(props.file_formats)} style={{display:'none'}} ref={hiddenFileInput}/>
-			<div className="home-buttons-flexbox">
-			{Object.keys(props.buttonList).map(key => {
-				return <Button onClick={() => handleSubmission(props.buttonList[key])} className="custom-button">{key}</Button>;
-			})}
+					<div className="home-buttons-flexbox">
+						{Object.keys(props.buttonList).map(key => {
+							return <Button onClick={() => handleSubmission(props.buttonList[key])} className="custom-button">{key}</Button>;
+						})}
+					</div>
+				</div>
 			</div>
-		</div>)
-	} if (!fileIsAnnotated) {
-		return (<div className="menu-page">
-			<h1>Please Wait...</h1>
-		</div>)
+		</div>
+		)
+	} else if (!fileIsAnnotated) {
+		return (<div className="menu-page-height">
+		<div className="menu-page-align">
+				<div className="menu-page">
+					<h1>Please Wait...</h1>
+				</div>		
+			</div>		
+		</div>		
+		)
 	} else {
 		const xmlContent = beautify(result);
 		console.log("Beautify result: " + result);

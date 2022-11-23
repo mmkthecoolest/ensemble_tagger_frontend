@@ -5,12 +5,28 @@ h1 {
 }
 
 .menu-page {
-	padding-top: 10em;
   font-size: 1.3em;
+  max-width: 1000px;
+  margin-right: auto;
+  margin-left: auto;
   }
 
+.menu-page-align {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.menu-page-height {
+  display: table;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
 .accordion-page {
-  padding-top: 10em;
+  padding-top: 20vh;
 }
 
 .accordion-download-button {
@@ -32,7 +48,7 @@ h1 {
 }
 
 body {
-  max-width: 70em;
+  max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -43,12 +59,14 @@ body {
   font-size: 1.4em;
   border-radius: 2em;
   font-weight: 600;
+  transition: background-color 0.25s;
 }
 
 .upload-button {
   border: none;
   border-radius: 2em;
   font-weight: 600;
+  transition: background-color 0.25s;
 }
 
 .home-buttons-flexbox {
@@ -64,10 +82,6 @@ body {
   justify-content: space-around;
 }
 
-.uploaded-file-text{
-  margin-left: 1em;
-}
-
 .xml {white-space: pre-wrap;}
 
 .custom-button:disabled {
@@ -76,6 +90,26 @@ body {
 
 .empty-folder-warning {
   color: red;
+}
+
+.drag-n-dropper {
+  width: 100%;
+  height: 100px;
+  border-radius: 10px;
+  border: dashed;
+  transition: background-color 0.25s;
+}
+
+.drag-n-dropper:hover {
+  cursor: pointer;
+}
+
+.drag-n-dropper-text {
+  margin-top: auto;
+  margin-bottom: auto;
+  text-align: center;
+  height: 100px;
+  line-height: 100px;
 }
 
 @media (prefers-color-scheme: dark) {  
@@ -88,7 +122,6 @@ body {
   .custom-button, .upload-button {
     color: #333333;
     background: #dddddd;
-    transition: background-color 0.25s;
   }
 
   .custom-button:hover, .upload-button:hover {
@@ -96,12 +129,12 @@ body {
     color: #333333;
   }
 
-  .accordion-button, .accordion-download-button{
+  .accordion-button, .accordion-download-button, .drag-n-dropper{
     background: #555555;
     color: #dddddd;
   }
 
-  .accordion-button:not(.collapsed){
+  .accordion-button:not(.collapsed), .drag-n-dropper:hover{
     background: #777777;
     color: #ffffff;
   }
@@ -121,7 +154,6 @@ body {
   .custom-button, .upload-button{
     color: #dddddd;
     background: #333333;
-    transition: background-color 0.25s;
   }
 
   .custom-button:hover, .upload-button:hover {
@@ -129,12 +161,12 @@ body {
     color: #dddddd;
   }
 
-  .accordion-button, .accordion-download-button{
+  .accordion-button, .accordion-download-button, .drag-n-dropper{
     background: #cccccc;
     color: #333333;
   }
 
-  .accordion-button:not(.collapsed){
+  .accordion-button:not(.collapsed), .drag-n-dropper:hover{
     background: #888888;
     color: #eeeeee;
   }
